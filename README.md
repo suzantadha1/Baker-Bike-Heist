@@ -30,7 +30,7 @@ This project was voted #1 by course TAs among 60+ final projects.
 
 ### Stage Screens
 <p align="center">
-  <img src="stage_1.gif" width="200" />
+  <img src="stage_1/stage_1.gif" width="200" />
   <img src="stage_2.gif" width="200" />
   <img src="stage_4_outside.gif" width="200" />
 </p>
