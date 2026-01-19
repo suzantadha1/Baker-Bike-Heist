@@ -1,0 +1,491 @@
+import turtle 
+
+
+# ---------- SCREEN SETUP ----------
+screen = turtle.Screen()
+screen.setup(1536, 1024)# screen size
+screen.bgcolor("black")
+screen.bgpic("img/classroom.gif")
+screen.title("Classroom Game")
+
+# ---------- GIF SIZE ----------
+gif_width = 1350   # actual GIF width
+gif_height = 770   # actual GIF height
+
+# ---------- MAP BOUNDARIES ----------
+x_min, x_max = -gif_width//2, gif_width//2
+y_min, y_max = -gif_height//2, gif_height//2
+
+# ---------- PLAYER SPEED ----------
+player_speed = 20
+
+# ---------- REGISTER PLAYER SHAPES ----------
+player_shapes = {
+    "P1": {
+        "front": "img/P1_front.gif",
+        "back": "img/P1_back.gif",
+        "left": "img/P1_left.gif",
+        "right": "img/P1_right.gif"
+    },
+    "P2": {
+        "front": "img/P2_front.gif",
+        "back": "img/P2_back.gif",
+        "left": "img/P2_left.gif",
+        "right": "img/P2_right.gif"
+    }
+}
+
+for key in player_shapes:
+    for shape in player_shapes[key].values():
+        screen.register_shape(shape)
+
+# ---------- CREATE PLAYER TURTLES ----------
+player1 = turtle.Turtle()
+player1.shape(player_shapes["P1"]["front"])
+player1.penup()
+player1.goto(0, 0)
+
+player2 = turtle.Turtle()
+player2.shape(player_shapes["P2"]["front"])
+player2.penup()
+player2.goto(80, 0)
+players = [player1, player2]
+
+# ---------- HELPER FUNCTION TO CLAMP PLAYERS ----------
+def clamp_player(player):
+    x = min(max(player.xcor(), x_min), x_max)
+    y = min(max(player.ycor(), y_min), y_max)
+    player.goto(x, y)
+
+# ---------- PLAYER 1 MOVEMENT ----------
+def move_up_p1():
+    player1.shape(player_shapes["P1"]["back"])
+    player1.sety(player1.ycor() + player_speed)
+    clamp_player(player1)
+
+def move_down_p1():
+    player1.shape(player_shapes["P1"]["front"])
+    player1.sety(player1.ycor() - player_speed)
+    clamp_player(player1)
+
+def move_left_p1():
+    player1.shape(player_shapes["P1"]["left"])
+    player1.setx(player1.xcor() - player_speed)
+    clamp_player(player1)
+
+def move_right_p1():
+    player1.shape(player_shapes["P1"]["right"])
+    player1.setx(player1.xcor() + player_speed)
+    clamp_player(player1)
+
+# ---------- PLAYER 2 MOVEMENT ----------
+def move_up_p2():
+    player2.shape(player_shapes["P2"]["back"])
+    player2.sety(player2.ycor() + player_speed)
+    clamp_player(player2)
+
+def move_down_p2():
+    player2.shape(player_shapes["P2"]["front"])
+    player2.sety(player2.ycor() - player_speed)
+    clamp_player(player2)
+
+def move_left_p2():
+    player2.shape(player_shapes["P2"]["left"])
+    player2.setx(player2.xcor() - player_speed)
+    clamp_player(player2)
+
+def move_right_p2():
+    player2.shape(player_shapes["P2"]["right"])
+    player2.setx(player2.xcor() + player_speed)
+    clamp_player(player2)
+
+# ---------- KEY BINDINGS ----------
+screen.listen()
+# Player 1 - WASD
+screen.onkey(move_up_p1, "w")
+screen.onkey(move_down_p1, "s")
+screen.onkey(move_left_p1, "a")
+screen.onkey(move_right_p1, "d")
+
+# Player 2 - Arrow Keys
+screen.onkey(move_up_p2, "Up")
+screen.onkey(move_down_p2, "Down")
+screen.onkey(move_left_p2, "Left")
+screen.onkey(move_right_p2, "Right")
+
+# ---------- DOOR SETTINGS ----------
+SECRET_CODE = "203520"
+MAX_ATTEMPTS = 10
+
+door_attempts = 0
+game_over = False
+
+# ---------- MESSAGE POPUP ----------
+message_turtle = turtle.Turtle()
+message_turtle.hideturtle()
+message_turtle.penup()
+message_turtle.color("white")
+message_turtle.goto(0, -380)
+
+def show_message(text, color="white"):
+    message_turtle.clear()
+    message_turtle.color(color)
+    message_turtle.write(
+        text,
+        align="center",
+        font=("Arial", 24, "bold")
+    )
+    screen.ontimer(message_turtle.clear, 1500)
+
+
+# ---------- DOOR HITBOX ----------
+DOOR_X = -650
+DOOR_Y = 100
+DOOR_WIDTH = 200
+DOOR_HEIGHT = 250
+# ---------- DOOR INPUT HANDLER ----------
+def ask_door_code(player):
+    global door_attempts, game_over
+
+    user_input = screen.textinput("Door Code", "Enter door code:")
+
+    # If cancelled → reopen instantly
+    if user_input is None:
+        show_message("You must enter a code!", "yellow")
+        ask_door_code(player)  # force retry
+        return
+
+    # Correct code
+    if user_input == SECRET_CODE:
+        show_message("Door unlocked!", "green")
+        return
+
+    # Wrong code → take damage
+    door_attempts += 1
+    apply_wrong_code_damage()
+    show_message("Wrong code!", "red")
+
+    if door_attempts >= MAX_ATTEMPTS:
+        show_message("Too many attempts!", "red")
+        game_over()
+        return
+
+    # Ask again
+    ask_door_code(player)
+
+def player_in_door(player):
+    x, y = player.position()
+    return (
+        DOOR_X <= x <= DOOR_X + DOOR_WIDTH and
+        DOOR_Y <= y <= DOOR_Y + DOOR_HEIGHT
+    )
+# def player_in_door(player):
+#     x, y = player.position()
+#     return (
+#         DOOR_X <= x <= DOOR_X + DOOR_WIDTH and
+#         DOOR_Y <= y <= DOOR_Y + DOOR_HEIGHT)
+
+# ---------- TRY DOOR ----------
+def try_door():
+    if game_over:
+        return
+
+    for p in players:
+        if player_in_door(p):
+            ask_door_code(p)   # pass the player
+            return
+
+door_center = (DOOR_X + DOOR_WIDTH/2, DOOR_Y + DOOR_HEIGHT/2)
+door_size = (DOOR_WIDTH, DOOR_HEIGHT)
+
+def draw_hitbox(center, size, color="white"):
+    cx, cy = center
+    w, h = size
+
+    debug = turtle.Turtle()
+    debug.hideturtle()
+    debug.speed("fastest")
+    debug.penup()
+
+    # Move to top-left corner
+    debug.goto(cx - w/2, cy + h/2)
+
+    debug.pendown()
+    debug.pencolor(color)
+
+    # Draw rectangle
+    for _ in range(2):
+        debug.forward(w)
+        debug.right(90)
+        debug.forward(h)
+        debug.right(90)
+
+    debug.penup()
+    debug.showturtle()  # make it visible
+
+# Draw your door hitbox in red
+draw_hitbox(door_center, door_size, "red")
+
+# ---------- WHITEBOARD HITBOX ----------
+whiteboard_center = (0, 310)
+whiteboard_size = (700, 100)
+top_hitbox_height = 40
+top_hitbox_width = 700
+top_hitbox_center = (
+    whiteboard_center[0],
+    whiteboard_center[1] + whiteboard_size[1]/2 - top_hitbox_height/2
+)
+#---------- REGISTER whiteboard OVERLAY GIF ----------
+screen.register_shape("img/whiteboard_overlay.gif")  # ensure this GIF exists
+
+def whiteboard_action(player):
+    global whiteboard_overlay
+
+    # Check if player is within the whiteboard hitbox
+    px, py = player.position()
+    hx, hy = whiteboard_center
+
+    if abs(px - hx) > whiteboard_size[0] / 2 or abs(py - hy) > whiteboard_size[1] / 2:
+        return  # Player too far → do nothing
+
+    # Player is close enough → show overlay
+    whiteboard_overlay.clear()
+    whiteboard_overlay.goto(0, 0)  # center the GIF on screen
+    whiteboard_overlay.shape("img/whiteboard_overlay.gif")
+    whiteboard_overlay.showturtle()
+
+# ---------- GLOBAL WHITEBOARD OVERLAY ----------
+whiteboard_overlay = turtle.Turtle()
+whiteboard_overlay.hideturtle()
+whiteboard_overlay.penup()
+whiteboard_overlay.speed("fastest")
+
+# ---------- GLOBAL PAPER OVERLAY ----------
+paper_overlay = turtle.Turtle()
+paper_overlay.hideturtle()
+paper_overlay.speed("fastest")
+paper_overlay.penup()
+
+# ---------- PAPER HITBOX ----------
+paper_center = (0, -300) 
+paper_size = (100, 80)
+# ---------- REGISTER PAPER OVERLAY GIF ----------
+screen.register_shape("img/paper_overlay.gif")  # ensure this GIF exists
+# ---------- PAPER ACTION WITH PROXIMITY CHECK ----------
+def paper_action(player):
+    global paper_overlay
+
+    # Check if player is within the paper hitbox
+    px, py = player.position()
+    hx, hy = paper_center
+
+    if abs(px - hx) > paper_size[0]/2 or abs(py - hy) > paper_size[1]/2:
+        return  # player too far → do nothing
+
+    # Player is close enough → show overlay
+    # paper_overlay.hideturtle()  # hide the arrow
+
+
+    # Show the overlay GIF
+    paper_overlay.clear()
+    paper_overlay.goto(0, 0)  # center the GIF on screen
+    paper_overlay.shape("img/paper_overlay.gif")
+    paper_overlay.showturtle()
+# ---------- ADD INTERACTABLE ----------
+# Assume add_interactable is defined in your code
+# paper_interact = add_interactable(players, paper_center, paper_size, paper_action, distance=5)
+
+# ---------- ANNOUNCEMENT ACTION ----------
+def announcement_action(player):
+    global announcement_overlay
+
+    # Check if player is within the announcement hitbox
+    px, py = player.position()
+    hx, hy = announcement_center
+
+    if abs(px - hx) > announcement_size[0] / 2 or abs(py - hy) > announcement_size[1] / 2:
+        return  # Player too far → do nothing
+
+    # Player is close enough → show overlay
+    announcement_overlay.clear()
+    announcement_overlay.goto(0, 0)  # center the GIF on screen
+    announcement_overlay.shape("img/announcement_overlay.gif")
+    announcement_overlay.showturtle()
+
+# ---------- REGISTER ANNOUNCEMENT OVERLAY GIF ----------
+screen.register_shape("img/announcement_overlay.gif")  # ensure this GIF exists
+
+
+# ---------- GLOBAL ANNOUNCEMENT OVERLAY ----------
+announcement_overlay = turtle.Turtle()
+announcement_overlay.hideturtle()
+announcement_overlay.penup()
+announcement_overlay.speed("fastest")
+
+
+# ---------- ANNOUNCEMENT HITBOX ----------
+announcement_center = (540, 360)  # <<< CHANGE POSITION IF NEEDED
+announcement_size = (240, 240)
+
+def try_announcement():
+    for p in players:
+        if abs(p.xcor() - announcement_center[0]) <= announcement_size[0] / 2 and \
+           abs(p.ycor() - announcement_center[1]) <= announcement_size[1] / 2:
+            announcement_action(p)
+            return
+
+# ---------- GENERAL INTERACTABLE FUNCTION ----------
+def add_interactable(players, obj_pos, obj_size, action, distance=5):
+    overlay_shown = False
+    def check_interaction():
+        nonlocal overlay_shown
+        for player in players:
+            px, py = player.xcor(), player.ycor()
+            ox, oy = obj_pos
+            w, h = obj_size
+            if abs(px - ox) < w/2 + distance and abs(py - oy) < h/2 + distance:
+                if not overlay_shown:
+                    action(player)
+                    overlay_shown = True
+                return
+        overlay_shown = False
+    return check_interaction
+
+# ---------- SINGLE "E" KEY HANDLER ----------
+def try_open_interactable():
+    for player in players:
+        px, py = player.position()
+
+        # --- WHITEBOARD CHECK ---
+        hx, hy = top_hitbox_center
+        if abs(px - hx) <= top_hitbox_width/2 and abs(py - hy) <= top_hitbox_height/2:
+            whiteboard_action(player)
+            return   # Stop here so only one interact opens
+
+        # --- PAPER CHECK ---
+        hx, hy = paper_center
+        if abs(px - hx) <= paper_size[0]/2 and abs(py - hy) <= paper_size[1]/2:
+            paper_action(player)
+            return
+
+        # --- DOOR CHECK ---
+        if player_in_door(player):
+            ask_door_code(player)
+            return
+        # --- ANNOUNCEMENT CHECK ---
+        if abs(px - announcement_center[0]) <= announcement_size[0]/2 and \
+           abs(py - announcement_center[1]) <= announcement_size[1]/2:
+            announcement_action(player)
+            return
+
+    # If player is not in *any* valid hitbox → do nothing
+    pass
+screen.onkey(try_open_interactable, "e")
+screen.listen()
+
+def close_any_overlay():
+    global whiteboard_overlay, paper_overlay
+
+    for player in players:
+        px, py = player.position()
+
+        # Close whiteboard only if player is near
+        hx, hy = top_hitbox_center
+        if abs(px - hx) <= top_hitbox_width/2 and abs(py - hy) <= top_hitbox_height/2:
+            whiteboard_overlay.clear()
+            whiteboard_overlay.hideturtle()
+
+        # Close paper only if player is near
+        hx, hy = paper_center
+        if abs(px - hx) <= paper_size[0]/2 and abs(py - hy) <= paper_size[1]/2:
+            paper_overlay.clear()
+            paper_overlay.hideturtle()
+
+        # Close announcement only if player is near
+        if abs(px - announcement_center[0]) <= announcement_size[0]/2 and \
+           abs(py - announcement_center[1]) <= announcement_size[1]/2:
+            announcement_overlay.hideturtle()
+screen.onkey(close_any_overlay, "q")
+screen.listen()
+
+# ---------- CLOSE OVERLAY FUNCTION ----------
+def close_any_overlay2():
+    global paper_overlay
+    paper_overlay.clear()
+    paper_overlay.hideturtle()
+
+# Register GIFs
+healthbar_images = {}
+for hp in [00, 20, 40, 50, 60, 70, 80, 90, 100]:
+    hp_str = f"{hp:02}"
+    path = f"img/hp{hp_str}_small.gif"
+    screen.addshape(path)
+    healthbar_images[hp] = path
+
+# Initial HP
+p1_hp = 100
+p2_hp = 100
+
+def get_hp_image(hp):
+    hp = max(0, min(100, hp))
+    nearest = max([h for h in healthbar_images.keys() if h <= hp])
+    return healthbar_images[nearest]
+
+# HUD turtles
+hp1 = turtle.Turtle()
+hp1.hideturtle()
+hp1.penup()
+hp1.goto(-580, 360)
+hp1.shape(get_hp_image(p1_hp))
+hp1.showturtle()
+
+hp2 = turtle.Turtle()
+hp2.hideturtle()
+hp2.penup()
+hp2.goto(580, 360)
+hp2.shape(get_hp_image(p2_hp))
+hp2.showturtle()
+
+def update_health_bar():
+    # Keep HP in 0–100 range
+    global p1_hp, p2_hp
+
+    p1_hp = max(0, min(100, p1_hp))
+    p2_hp = max(0, min(100, p2_hp))
+
+    # Update the images
+    hp1.shape(get_hp_image(p1_hp))
+    hp2.shape(get_hp_image(p2_hp))
+
+# ---------- DAMAGE FUNCTION ----------
+def apply_wrong_code_damage():
+    global p1_hp, p2_hp
+    p1_hp -= 10
+    p2_hp -= 10
+
+    p1_hp = max(0, p1_hp)
+    p2_hp = max(0, p2_hp)
+
+    update_health_bar()
+
+
+
+# # ---------- DOOR DEBUG VISUAL (optional) ----------
+# door_debug = turtle.Turtle()
+# door_debug.hideturtle()
+# door_debug.penup()
+# door_debug.pencolor("red")
+
+# door_debug.goto(DOOR_X, DOOR_Y)
+# door_debug.pendown()
+
+# for _ in range(2):
+#     door_debug.forward(DOOR_WIDTH)
+#     door_debug.left(90)
+#     door_debug.forward(DOOR_HEIGHT)
+#     door_debug.left(90)
+
+# door_debug.penup()
+
+# ---------- MAIN LOOP ----------
+screen.mainloop()
