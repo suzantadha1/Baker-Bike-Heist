@@ -83,6 +83,10 @@ python main.py
 ---
 
 ## Notes
+
 - Entirely built from scratch, no external engines  
 - Includes all GIFs, animations, and assets used in the game  
 - Designed as a final project for CS 111: Program Design I at UIC  
+- **Environment Notice:** This game was developed in the ZyBooks Python environment as required for CS 111.  
+  It uses hard-coded coordinates and window settings specific to ZyBooks, so it **may not run correctly outside ZyBooks** (e.g., in local Python/Turtle on Mac or Windows).  
+  Screenshots and GIFs in this repo show the intended gameplay and visuals. 
