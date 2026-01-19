@@ -27,6 +27,10 @@ This project was voted #1 by course TAs among 60+ final projects.
   <img src="gameplay_preview.gif" width="480" />
 </p>
 
+## Full Gameplay GIF
+
+The full 1:36 gameplay GIF is available here: [gameplay_full.gif](gameplay_full.gif)
+
 ---
 
 ## Screenshots / GIFs
