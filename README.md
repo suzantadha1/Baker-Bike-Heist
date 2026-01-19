@@ -21,7 +21,18 @@ This project was voted #1 by course TAs among 60+ final projects.
 
 ---
 
+## Gameplay Video
+
+<p align="center">
+  <video width="480" controls>
+    <source src="gameplay.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</p>
+
 ## Screenshots / GIFs
+
+---
 
 ### Story / Start Screens
 <p align="center">
