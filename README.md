@@ -68,15 +68,8 @@ This project was voted #1 by course TAs among 60+ final projects.
 
 ---
 
-## How to Run
-
-Clone the repo and run:
-
-```bash
-python main.py
-
-
 ### Controls
+
 - Player 1: WASD + Action keys  
 - Player 2: Arrow keys + Action keys  
 
@@ -90,3 +83,14 @@ python main.py
 - **Environment Notice:** This game was developed in the ZyBooks Python environment as required for CS 111.  
   It uses hard-coded coordinates and window settings specific to ZyBooks, so it **may not run correctly outside ZyBooks** (e.g., in local Python/Turtle on Mac or Windows).  
   Screenshots and GIFs in this repo show the intended gameplay and visuals. 
+
+---
+
+## How to Run
+
+Clone the repo and run:
+
+```bash
+python main.py
+
+
