@@ -77,7 +77,7 @@ The full 1:36 gameplay GIF is available here: [gameplay_full.gif](gameplay_full.
 
 - Language: Python  
 - Graphics: Custom-built with `turtle`  
-- Team: You (Lead), Agnesa Beqiri, Joshua Mam  
+- Team: Suzan Tadha(Lead), Agnesa Beqiri, Joshua Mam  
 - Platform: ZyBooks Python environment (works on any OS with Python/Turtle)  
 
 ---
